@@ -14,13 +14,18 @@ class Model:
         
         photo_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
         photos = []
-        names = []
+        names_list = []
+        names = {}
+
         
         for file in os.listdir(PHOTOS_DIR):
             for ext in photo_extensions:
                 if file.lower().endswith(ext):
                     photos.append(file)
-                    names.append(file.split('.')[0])
+                    names_list.append(file.split('.')[0])
+
+        for name in names_list:
+            names[names_list.index(name)] = name
 
         random.shuffle(photos)
         return photos, names

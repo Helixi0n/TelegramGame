@@ -1,11 +1,11 @@
 from telebot import types, TeleBot
 from models import Model
+from constants import ADMIN_ID
 
 user_states = {}
 user_question = {}
 photos, names = Model.get_photo_list_shuffled()
 PHOTOS_DIR = 'photos/'
-admin_id = 0
 
 class Controller:
     def __init__(self, bot):
@@ -43,9 +43,10 @@ class Controller:
 
             send_question(callback)
 
-        @self.bot.callback_query_handler(func=lambda callback: callback.data != 'start')
+        @self.bot.callback_query_handler(func=lambda callback: callback.data.startswith('ans_'))
         def handle_answer(callback):
-            answer = callback.data
+            key = callback.data.strip('ans_')
+            answer = names.get(key)
             right_answer = user_question[callback.message.chat.id]
 
             Model.add_score(callback.message.chat.id, answer, right_answer)
@@ -57,8 +58,8 @@ class Controller:
                 photo = next(user_states[callback.message.chat.id])
                 keyboard = types.InlineKeyboardMarkup(row_width=1)
 
-                for name in names:
-                    keyboard.add(types.InlineKeyboardButton(text=name, callback_data=name))
+                for key, value in names.items():
+                    keyboard.add(types.InlineKeyboardButton(text=value, callback_data=f'ans_{key}'))
 
                 user_question[callback.message.chat.id] = photo.split('.')[0]
 
@@ -80,6 +81,6 @@ class Controller:
                         )
                     
                     self.bot.send_message(
-                        admin_id,
+                        ADMIN_ID,
                         f'{user} прошел (-а) тест за {compl}. Результат: {score}/{len(names)}'
                     )
