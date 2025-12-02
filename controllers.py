@@ -14,12 +14,26 @@ class Controller:
     def register_handlers(self):
         @self.bot.message_handler(commands=['start'])
         def start(message):
-            msg = 'Привет! Это игра "Угадай коллегу". Тебе нужно будет угадать своего коллегу по фото из его детства. Для начала напиши своё имя:'
+            if Model.get_user(message.chat.id):
+                Model.zero_score(message.chat.id)
+                msg = 'Как только будете готовы - нажмите на кнопку под сообщением'
 
-            self.bot.send_message(
-                message.chat.id,
-                msg
-            )
+                keyboard = types.InlineKeyboardMarkup(row_width=1)
+                keyboard.add(types.InlineKeyboardButton('Начать!', callback_data='start'))
+
+                self.bot.send_message(
+                    message.chat.id,
+                    msg,
+                    reply_markup=keyboard
+                )
+
+            else:
+                msg = 'Приближается Новый год - волшебный и всеми любимый праздник. И в это время мы мысленно возвращаемся в детство, вспоминая, как мы украшали елку и ждали деда Мороза с подарками.\nС помощь ИИ мы вернули наших коллег в детство. Предлагаем Вам их угадать!\nДля начала напиши своё имя:'
+
+                self.bot.send_message(
+                    message.chat.id,
+                    msg
+                )
         
         @self.bot.message_handler()
         def name(message):
@@ -58,15 +72,24 @@ class Controller:
                 photo = next(user_states[callback.message.chat.id])
                 keyboard = types.InlineKeyboardMarkup(row_width=1)
 
-                for key, value in names.items():
-                    keyboard.add(types.InlineKeyboardButton(text=value, callback_data=f'ans_{key}'))
+                correct_answer = photo.split('.')[0]
+                user_question[callback.message.chat.id] = correct_answer
 
-                user_question[callback.message.chat.id] = photo.split('.')[0]
+                answer_options = Model.get_five_shuffled(correct_answer, names)
+                buttons = []
+                
+                for key in answer_options:
+                    buttons.append(types.InlineKeyboardButton(
+                        text=names[key], 
+                        callback_data=f'ans_{key}'
+                    ))
+                
+                keyboard.add(*buttons)
 
-                with open(PHOTOS_DIR + photo, "rb") as photo:
+                with open(PHOTOS_DIR + photo, "rb") as photo_file:
                     self.bot.send_photo(
                         callback.message.chat.id,
-                        photo=photo,
+                        photo=photo_file,
                         reply_markup=keyboard
                     )
     

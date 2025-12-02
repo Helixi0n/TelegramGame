@@ -14,7 +14,6 @@ class User(BaseModel):
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, default=0)
     name = Column(String)
-    completion = Column(Boolean)
     score = Column(Integer)
     time_start = Column(DateTime)
     time_end = Column(DateTime)
