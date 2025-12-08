@@ -10,6 +10,8 @@ controller = Controller(bot)
 controller.register_handlers()
 
 if __name__ == "__main__":
-    print("Bot is running...")
-
-    bot.polling(none_stop=True)
+    try:
+        print("Bot is running...")
+        bot.polling(none_stop=True)
+    except Exception as e:
+        print(f'Ошибка:{e}')
