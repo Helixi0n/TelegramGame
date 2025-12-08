@@ -11,11 +11,12 @@ class Model:
     def get_photo_list_shuffled():
         PHOTOS_DIR = 'photos'
         if not os.path.exists(PHOTOS_DIR):
-            return [], {}
+            return [], {}, {}
         
         photo_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
         photos = []
         names = {}
+        tags = {}
 
         files = []
         for file in os.listdir(PHOTOS_DIR):
@@ -29,22 +30,31 @@ class Model:
             photos.append(file)
             name_without_ext = file.split('.')[0]
             names[str(index)] = name_without_ext
+            
+            # Определение тэга по имени файла
+            if '_m' in name_without_ext.lower():
+                tags[str(index)] = 'Мужчина'
+            elif '_f' in name_without_ext.lower():
+                tags[str(index)] = 'Женщина'
+            else:
+                tags[str(index)] = None
         
         random.shuffle(photos)
-        return photos, names
+        return photos, names, tags
     
     @staticmethod
-    def get_five_shuffled(correct_answer, names):
-        correct_key = None
-        for key, name in names.items():
-            if name == correct_answer:
-                correct_key = key
-                break
+    def get_five_shuffled(correct_answer, names, tags, correct_key):
+        correct_tag = tags.get(correct_key)
         
         if correct_key is None:
             return []
 
-        wrong_keys = [key for key in names.keys() if key != correct_key]
+        # Фильтруем варианты ответов по тэгу
+        if correct_tag in ['Мужчина', 'Женщина']:
+            wrong_keys = [key for key in names.keys() 
+                         if key != correct_key and tags.get(key) == correct_tag]
+        else:
+            wrong_keys = [key for key in names.keys() if key != correct_key]
 
         if len(wrong_keys) >= 4:
             selected_wrong = random.sample(wrong_keys, 4)

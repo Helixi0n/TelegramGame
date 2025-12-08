@@ -4,7 +4,7 @@ from constants import ADMIN_ID
 
 user_states = {}
 user_question = {}
-photos, names = Model.get_photo_list_shuffled()
+photos, names, tags = Model.get_photo_list_shuffled()
 PHOTOS_DIR = 'photos/'
 
 class Controller:
@@ -73,14 +73,23 @@ class Controller:
                 keyboard = types.InlineKeyboardMarkup(row_width=1)
 
                 correct_answer = photo.split('.')[0]
+                
+                # Находим ключ правильного ответа
+                correct_key = None
+                for key, name in names.items():
+                    if name == correct_answer:
+                        correct_key = key
+                        break
+                
                 user_question[callback.message.chat.id] = correct_answer
 
-                answer_options = Model.get_five_shuffled(correct_answer, names)
+                # Передаем tags и correct_key в метод
+                answer_options = Model.get_five_shuffled(correct_answer, names, tags, correct_key)
                 buttons = []
                 
                 for key in answer_options:
                     buttons.append(types.InlineKeyboardButton(
-                        text=names[key], 
+                        text=names[key][:-2], 
                         callback_data=f'ans_{key}'
                     ))
                 
