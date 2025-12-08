@@ -127,7 +127,7 @@ class Model:
             
     @staticmethod
     def zero_score(user_id):
-        stmt = update(User).where(User.user_id == user_id).values(score=0)
+        stmt = update(User).where(User.user_id == user_id).values(score=0, time_start=None, time_end=None, time_completion=None)
         session.execute(stmt)
         session.commit()
         session.close()
